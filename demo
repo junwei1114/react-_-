@@ -1,0 +1,68 @@
+import React, { Component, PropTypes } from 'react';
+import MeScroll from "mescroll.js"
+import API from "../../api/api";
+import {getDataList} from "../../store/list/actions";
+import '../../assets/mescroll.min.css'
+
+class List extends Component {
+    constructor(props, context) {
+        super(props, context);
+        this.state={
+            datas:[],
+            total:0,
+        }
+        this.test = this.test.bind(this);
+    }
+    componentDidMount(){
+        let ctx = this;
+        var mescroll = new MeScroll ( "mescroll" , {down : { use:true}, up : {
+                use:true,
+                offSet:100,
+                onScroll:function(mescroll, y, isUp){
+                },
+                callback:function (page, mescroll) {
+                    var page = page.num
+                    setTimeout(()=>{
+                        ctx.test(page, mescroll);
+                    },800)
+                },
+                error: function (e) {
+
+                }
+            }} ) ;
+        mescroll.resetUpScroll()
+    }
+    test(page,mescroll){
+        API.getApiEntrevistaListInfo(page,(res) => {
+            if(res.code==='1000'){
+                var dataList = res.data.entrevistaList
+                if(dataList.length){
+                    console.log(page)
+                    if (page === 1)  this.setState({datas:[]})
+                    this.setState({
+                        datas:this.state.datas.concat(dataList)
+                    })
+                }
+                mescroll.endSuccess(dataList.length);
+            } else {
+                mescroll.endErr();
+            }
+        })
+    }
+    render() {
+        return (
+            <div id="mescroll" className="mescroll" style={{overflow: "auto"}}>
+                <ul>
+                {this.state.datas.map((item)=>{
+                    return (
+                            <li key={item.vistaid}>
+                                {item.vistaid}
+                            </li>
+                    )
+                })}
+                </ul>
+            </div>
+        );
+    }}
+
+export default  List;
